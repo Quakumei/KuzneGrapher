@@ -2,13 +2,30 @@ import dearpygui.dearpygui as dpg
 import numpy as np
 from scipy import integrate
 from math import cos, pi, sin, sqrt, inf
+import matplotlib.pyplot as plt
 
 GRAPH_FROM = 0
-GRAPH_TO = 30
+GRAPH_TO = 50
 
-def getFuncXt(k=1, alpha=1):
-    X = lambda t, E: pow(E / alpha, 1 / k) * cos(2 * t * pi / getFuncTE(alpha=alpha, k=k)(E))
-    return X
+from scipy.integrate import odeint, solve_bvp, solve_ivp
+import scipy
+
+
+def get_fvdp1(k):
+    return lambda t, y: [y[1], - 2 * k * pow((y[0]), (k - 1))]
+
+
+def solve_second_order_ode(k, E, alpha):
+    '''
+         Решить ОДУ второго порядка
+    '''
+    t2 = np.linspace(0, 20, 1000)
+    y0 = [E / alpha * (1 / k), 0]  # Условия начального значения
+    # Начальное значение [2,0] означает y (0) = 2, y '(0) = 0
+    # Возвращаем y, где y [:, 0] - это значение y [0], которое является окончательным решением, а y [:, 1] - это значение y '(x)
+    y = scipy.integrate.odeint(get_fvdp1(k), y0, t2, tfirst=True)
+    return t2, y[:, 0]
+
 
 def getFuncTE(k=1):
     # k = 0 - не существует (E1/0)
@@ -29,16 +46,20 @@ def genLinearData(func, a, b, margin_a=0, margin_b=0, step=10):
     return x, y
 
 
-T_func, I = getFuncTE(k=1)
+E, alpha = 1, 1
+T_func, I = getFuncTE(k=2)
 TE_x, TE_y = genLinearData(T_func, GRAPH_FROM, GRAPH_TO, margin_a=1)
-
+Xt_x, Xt_y = solve_second_order_ode(k=2, E=E, alpha=alpha)
+Xt_y = Xt_y.copy(order='C')
 
 def update_series_te(sender):
     T, I = getFuncTE(k=dpg.get_value(sender))
     TE_x, TE_y = genLinearData(T, GRAPH_FROM, GRAPH_TO, margin_a=1, step=250)
+    Xt_x, Xt_y = solve_second_order_ode(dpg.get_value(sender), E=E, alpha=alpha)
+    Xt_y = Xt_y.copy(order='C')
     dpg.set_value('te_series', [TE_x, TE_y])
+    dpg.set_value('Xt_series', [Xt_x, Xt_y])
     dpg.set_value('i_value', "I: " + str(I))
-
 
 def update_fslider(sender):
     value = dpg.get_item_user_data(sender)
@@ -47,11 +68,6 @@ def update_fslider(sender):
 
 
 dpg.create_context()
-
-width, height, channels, data = dpg.load_image("output.png")
-with dpg.texture_registry(show=False):
-    dpg.add_static_texture(width, height, data, tag="3d_graph")
-
 with dpg.window(label="KuzneGrapher", tag="mainwindow", no_title_bar=True, no_scrollbar=True, menubar=False,
                 no_move=True, no_close=True, no_background=True):
     # create plot
@@ -66,9 +82,19 @@ with dpg.window(label="KuzneGrapher", tag="mainwindow", no_title_bar=True, no_sc
             # series belong to a y axis
             dpg.add_line_series(TE_x, TE_y, label="T(E)", parent="y_axis", tag='te_series')
 
-        #dpg.add_image("3d_graph")
+        with dpg.plot(label="Movement graph", height=400, width=400):
+            # optionally create legend
+            dpg.add_plot_legend()
+            # REQUIRED: create x and y axes
+            dpg.add_plot_axis(dpg.mvXAxis, label="t")
+            dpg.add_plot_axis(dpg.mvYAxis, label="X", tag="y_axis_X")
 
-    dpg.add_slider_float(label="k", default_value=1, max_value=10, min_value=-10, callback=update_series_te,
+            # series belong to a y axis
+            dpg.add_line_series(Xt_x, Xt_y, label="X(t)", parent="y_axis_X", tag='Xt_series')
+
+        # dpg.add_image("3d_graph")
+
+    dpg.add_slider_float(label="k", default_value=2, max_value=10, min_value=-10, callback=update_series_te,
                          tag="float_slider")
     with dpg.group(horizontal=True) as group_buttons:
         dpg.add_button(label="-1", callback=update_fslider, user_data=-1)
