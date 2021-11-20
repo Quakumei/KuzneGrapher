@@ -96,7 +96,7 @@ def update_graphs(sender):
     :param sender: one of the sliders
     :return: None
     """
-    k = round(dpg.get_value("k_slider"), PRECISION)
+    k = round(dpg.get_value("k_slider"), PRECISION) + 1e-5
     alpha = round(dpg.get_value("alpha_slider"), PRECISION)
     E0 = round(dpg.get_value("E0_slider"), PRECISION)
     m = round(dpg.get_value("m_slider"), PRECISION)
@@ -137,16 +137,11 @@ def update_graphs(sender):
     # X = scipy.integrate.solve_ivp(equation, t_span, y0)
     X, infodict = scipy.integrate.odeint(equation, y0, t, tfirst=True, full_output=True)
 
-    print(infodict["message"])
-    print(X)
-    # print(f"Len xs: {len(X_x)}")
-    # print(f"Len ys: {len(X_y)}")
     X_x = t
     X_y = X[:, 0]
     X_y = X_y.copy(order="C")
     X_y = continue_sine(X_y)
-    # X_x = X.t.copy(order="C")
-    # X_y = X.y.copy(order="C")
+
 
     dpg.set_value('Xt_series', (X_x, X_y))
     dpg.fit_axis_data('Xt_y_axis')
@@ -172,6 +167,7 @@ def window_initialize():
             with dpg.plot(
                     label=LEFT_PLOT_LABEL,
                     width=int(WINDOW_SIZE_WIDTH / 2 - GRAPH_MARGIN),
+                    anti_aliased=True
             ):
                 # dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="E", tag="TE_x_axis")
@@ -188,6 +184,7 @@ def window_initialize():
             with dpg.plot(
                     label=RIGHT_PLOT_LABEL,
                     width=int(WINDOW_SIZE_WIDTH / 2 - GRAPH_MARGIN),
+                    anti_aliased=True
             ):
                 # dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="t", tag="Xt_x_axis")
