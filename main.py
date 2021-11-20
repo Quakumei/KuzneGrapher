@@ -19,15 +19,16 @@ def solve_second_order_ode(k, E, alpha):
     '''
          Решить ОДУ второго порядка
     '''
-    t2 = np.linspace(0, 20, 1000)
+    t2 = np.linspace(0, 50, 5000)
     y0 = [E / alpha * (1 / k), 0]  # Условия начального значения
     # Начальное значение [2,0] означает y (0) = 2, y '(0) = 0
     # Возвращаем y, где y [:, 0] - это значение y [0], которое является окончательным решением, а y [:, 1] - это значение y '(x)
     y = scipy.integrate.odeint(get_fvdp1(k), y0, t2, tfirst=True)
+    print(y[:, 0][:1000 ])
     return t2, y[:, 0]
 
 
-def getFuncTE(k=1):
+def getFuncTE(k=2.0):
     # k = 0 - не существует (E1/0)
     # k = (-0.5;0) - существует
     # k = -1 - существует, но оч странно
@@ -47,9 +48,9 @@ def genLinearData(func, a, b, margin_a=0, margin_b=0, step=10):
 
 
 E, alpha = 1, 1
-T_func, I = getFuncTE(k=2)
+T_func, I = getFuncTE(k=2.00)
 TE_x, TE_y = genLinearData(T_func, GRAPH_FROM, GRAPH_TO, margin_a=1)
-Xt_x, Xt_y = solve_second_order_ode(k=2, E=E, alpha=alpha)
+Xt_x, Xt_y = solve_second_order_ode(k=2.00, E=E, alpha=alpha)
 Xt_y = Xt_y.copy(order='C')
 
 def update_series_te(sender):
@@ -94,7 +95,7 @@ with dpg.window(label="KuzneGrapher", tag="mainwindow", no_title_bar=True, no_sc
 
         # dpg.add_image("3d_graph")
 
-    dpg.add_slider_float(label="k", default_value=2, max_value=10, min_value=-10, callback=update_series_te,
+    dpg.add_slider_float(label="k", default_value=2.00, max_value=10, min_value=-10, callback=update_series_te,
                          tag="float_slider")
     with dpg.group(horizontal=True) as group_buttons:
         dpg.add_button(label="-1", callback=update_fslider, user_data=-1)
