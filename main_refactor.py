@@ -5,14 +5,14 @@ import numpy as np
 from scipy import integrate
 import scipy
 
-TITLE = "KUZNEGRAPH"
+TITLE = "GRAPH"
 WINDOW_SIZE_WIDTH = 800
 WINDOW_SIZE_HEIGHT = 600
 GRAPH_MARGIN = 50 / 2
 
 LEFT_PLOT_LABEL = "T(E)"
 LEFT_PLOT_FROM = 0
-LEFT_PLOT_TO = 100
+LEFT_PLOT_TO = 1000
 LEFT_PLOT_STEP = 10  # N of points between integers
 LEFT_PLOT_POINTS_BETWEEN_INTEGERS = 1000
 
@@ -75,13 +75,12 @@ def continue_sine(sine_start: np.ndarray):
         val = sine_start[i]
         i += 1
 
-    #np.array((0,))
+    # np.array((0,))
     sine = np.concatenate(
         (sine_start[0:i - 1],
          np.negative(sine_start[i - 1:0:-1]),
-         np.negative(sine_start[0 : i - 1]),
+         np.negative(sine_start[0: i - 1]),
          sine_start[i - 1:0:-1]))
-    print(sine)
     leng = len(sine_start)
     leng_s = len(sine)
     for j in range(0, leng):
@@ -107,7 +106,9 @@ def update_graphs(sender):
     # T(E) graph: E != E0, E is a variable.
     I = lambda k: lambda z: 1 / np.square(1 - np.power(abs(z), k))
     I_val, I_abserr = integrate.quad(I(k), 1e-5, 1)
-    dpg.set_value('I_value_text', f"I = {I_val}\t I_abserr = {2 * I_abserr}")
+    # dpg.set_value('I_value_text', f"I = {I_val}\t I_abserr = {2 * I_abserr}")
+    dpg.set_value('I_value_text', f"I = {I_val}")
+    print(f"I_abserr = {2 * I_abserr}")
     T = lambda E: np.square(2 * m) / (k * np.square(alpha)) * np.power(E, (1 / k - 1 / 2)) * abs(2 * I_val)
 
     T_x = []
@@ -120,7 +121,7 @@ def update_graphs(sender):
         T_y.append(T(arg))
     dpg.set_value('TE_series', (T_x, T_y))
     dpg.fit_axis_data('TE_y_axis')
-    dpg.fit_axis_data('TE_x_axis')
+    # dpg.fit_axis_data('TE_x_axis')
 
     # X(t) graph:
     # solve X(t)'' + 2k * (X(t))^(k-1) = 0, x(0) = (E/a)^1/k, x(0)' = 0
@@ -141,7 +142,6 @@ def update_graphs(sender):
     X_y = X[:, 0]
     X_y = X_y.copy(order="C")
     X_y = continue_sine(X_y)
-
 
     dpg.set_value('Xt_series', (X_x, X_y))
     dpg.fit_axis_data('Xt_y_axis')
@@ -167,7 +167,8 @@ def window_initialize():
             with dpg.plot(
                     label=LEFT_PLOT_LABEL,
                     width=int(WINDOW_SIZE_WIDTH / 2 - GRAPH_MARGIN),
-                    anti_aliased=True
+                    anti_aliased=True,
+                    equal_aspects=True
             ):
                 # dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="E", tag="TE_x_axis")
@@ -184,7 +185,8 @@ def window_initialize():
             with dpg.plot(
                     label=RIGHT_PLOT_LABEL,
                     width=int(WINDOW_SIZE_WIDTH / 2 - GRAPH_MARGIN),
-                    anti_aliased=True
+                    anti_aliased=True,
+                    equal_aspects=True
             ):
                 # dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="t", tag="Xt_x_axis")
