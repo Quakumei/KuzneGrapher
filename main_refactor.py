@@ -131,7 +131,7 @@ def update_graphs(sender):
                      RIGHT_PLOT_TO,
                      int(RIGHT_PLOT_POINTS_BETWEEN_INTEGERS * (RIGHT_PLOT_TO - RIGHT_PLOT_FROM)))
     equation = lambda t, y: [y[1], - 2 * k * np.power((y[0]), (k - 1))]
-    A = E0 / (alpha * k)
+    A = (E0 / alpha) ** (1/k)
     y0 = [A, 0]  # Начальное значение [2,0] означает y (0) = 2, y '(0) = 0
     t_span = (RIGHT_PLOT_FROM, RIGHT_PLOT_TO)
     t = np.arange(RIGHT_PLOT_FROM, RIGHT_PLOT_TO, 0.01)
