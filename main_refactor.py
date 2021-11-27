@@ -1,5 +1,3 @@
-import warnings
-
 import dearpygui.dearpygui as dpg
 import numpy as np
 from scipy import integrate
@@ -18,7 +16,7 @@ LEFT_PLOT_POINTS_BETWEEN_INTEGERS = 1000
 
 RIGHT_PLOT_LABEL = "X(t)"
 RIGHT_PLOT_FROM = 0
-RIGHT_PLOT_TO = 50
+RIGHT_PLOT_TO = 150
 RIGHT_PLOT_STEP = 10  # N of points between integers
 RIGHT_PLOT_POINTS_BETWEEN_INTEGERS = 1000
 
